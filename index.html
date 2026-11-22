@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Bedrock Check · Проверка отчета</title>
+  <style>
+    :root{color-scheme:dark;--bg:#090f1c;--card:#111c2d;--line:#293750;--text:#ecf3ff;--muted:#aabbd2;--blue:#74b6ff;--green:#77e6b5;--red:#ff9ba6;--yellow:#f3ce88}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,#172e51 0,transparent 46%),var(--bg);color:var(--text);font:1rem/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+    main{max-width:1040px;margin:auto;padding:48px 24px 28px}header{margin-bottom:30px}.brand{display:flex;align-items:center;gap:12px;font-size:.875rem;letter-spacing:.13em;font-weight:750;color:var(--blue)}.brand svg{width:34px;height:38px;flex-shrink:0}h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.15;letter-spacing:-.04em;margin:22px 0 16px}h2{font-size:1.2rem;margin:0 0 10px}h3{font-size:1rem;margin:0 0 8px}p{margin:0 0 12px}.lead{max-width:680px;color:var(--muted);font-size:1.05rem}.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}.caption{color:var(--muted);font-size:.875rem}label{display:block;font-weight:600;margin-bottom:8px}textarea,input[type=text],input[type=search]{width:100%;background:#0b1423;border:1px solid #3d4e68;border-radius:10px;padding:12px;color:var(--text);font:inherit}textarea{resize:vertical;min-height:160px;font: .9rem/1.6 ui-monospace,Consolas,monospace}input[type=file]{width:100%;font:inherit;color:var(--muted);margin:4px 0 20px}input[type=file]::file-selector-button{border:0;border-radius:9px;background:#263f62;color:var(--text);padding:12px 14px;margin-right:12px;font:inherit;cursor:pointer}button{min-height:48px;border-radius:10px;padding:12px 18px;border:1px solid transparent;background:#2563eb;color:white;cursor:pointer;font:inherit;font-weight:650}button.secondary{background:transparent;border-color:#455671;color:var(--muted)}button:disabled{opacity:.55;cursor:wait}.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}:focus-visible{outline:3px solid #84c7ff;outline-offset:3px}.aside p{color:var(--muted)}.note{border-left:3px solid var(--yellow);padding:0 0 0 14px;margin-top:20px;color:#e9d6b6}.steps{padding-left:22px;color:var(--muted);margin:12px 0}.steps li{padding-left:4px;margin:10px 0}code{font-size:.9em;color:#d7e7ff;overflow-wrap:anywhere}.key{overflow-wrap:anywhere;font: .8rem/1.6 ui-monospace,monospace;color:var(--muted)}#result{margin-top:24px;scroll-margin-top:20px}.verdict{border-radius:16px;padding:22px 24px;margin-bottom:16px;border:1px solid}.verdict h2{letter-spacing:.02em;margin:0 0 8px}.good{background:#102c28;border-color:#2c7961;color:var(--green)}.bad{background:#331b27;border-color:#94505a;color:var(--red)}.neutral{background:#30291b;border-color:#80673a;color:var(--yellow)}.verdict p{color:var(--text);margin:0}.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.meta>div{background:#0d1727;border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}.meta span{display:block;font-size:.875rem;color:var(--muted)}.meta strong{display:block;overflow-wrap:anywhere;font-size:1rem}.warning{color:var(--yellow);border:1px solid #655633;background:#27231b;padding:14px;border-radius:10px;margin:14px 0}.finding{border-top:1px solid var(--line);padding:18px 0}.finding h3{color:#bcd8ff}.path{overflow-wrap:anywhere;font: .875rem/1.6 ui-monospace,monospace;color:#d7e7ff;margin-bottom:8px}.finding p{color:var(--muted);margin-bottom:6px}.tag{color:var(--yellow);font-size:.875rem}.toolbar{margin:18px 0 0}.empty{padding:16px 0;color:var(--muted)}details{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}summary{cursor:pointer;color:var(--muted)}.issue{overflow-wrap:anywhere;color:var(--muted);padding:8px 0;border-bottom:1px solid var(--line)}footer{border-top:1px solid var(--line);margin-top:32px;padding:20px 0 0;color:var(--muted);font-size:.875rem;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}[hidden]{display:none!important}
+    @media(max-width:720px){main{padding:28px 16px 20px}.layout{grid-template-columns:1fr}.card{padding:20px}.aside{order:2}.meta{grid-template-columns:1fr 1fr}.verdict{padding:20px}h1{margin-top:20px}.buttons button{flex:1}.meta>div{padding:12px}}
+    @media(prefers-reduced-motion:no-preference){button{transition:background .15s}button:hover:not(:disabled){filter:brightness(1.12)}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand"><svg viewBox="0 0 40 44" fill="none" aria-hidden="true"><path d="M20 2 36 8v13c0 10-16 20-16 20S4 31 4 21V8Z" stroke="currentColor" stroke-width="2.3"/><path d="m12 21 5 5 11-12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>BEDROCK CHECK</div>
+    <h1>Проверьте подпись.<br>Изучите факты.</h1>
+    <p class="lead">Откройте отчет с компьютера на телефоне и проверьте, менялись ли подписанные данные. Весь анализ выполняется в вашем браузере.</p>
+  </header>
+  <div class="layout">
+    <section class="card" aria-labelledby="upload-title">
+      <h2 id="upload-title">Проверка отчета</h2>
+      <p class="caption">Загрузите report.json или вставьте его содержимое. Максимум 16 MiB.</p>
+      <label for="file">Файл с компьютера</label>
+      <input id="file" type="file" accept=".json,.txt,application/json,text/plain">
+      <label for="report">Текст отчета</label>
+      <textarea id="report" placeholder='{"format":"bedrock-check.ed25519.v1", ...}' spellcheck="false" autocomplete="off"></textarea>
+      <label for="challenge" style="margin-top:16px">Ожидаемый код проверки</label>
+      <input id="challenge" type="text" maxlength="128" placeholder="Если вы сообщили код владельцу ПК" autocomplete="off">
+      <div class="buttons"><button id="verify" type="button">Проверить подпись</button><button id="reset" class="secondary" type="button">Очистить</button></div>
+      <noscript><p class="warning">Для проверки необходимо включить JavaScript.</p></noscript>
+    </section>
+    <aside class="card aside">
+      <h2>Что подтверждает проверка</h2>
+      <p>Ed25519 проверяет, что данные соответствуют цифровой подписи этого проекта.</p>
+      <ol class="steps"><li>Сообщите владельцу ПК новый случайный код до запуска сканера.</li><li>Получите файл отчета и проверьте подпись, код, время и имя ПК.</li><li>Оцените находки и ограничения проверки вручную.</li></ol>
+      <div class="note"><strong>Граница доверия</strong><p>Приватный ключ встроен в программу и может быть извлечен. Даже действительная подпись не доказывает честность сканирования, личность ПК или отсутствие читов. Код помогает сверить сеанс, но не защищает от владельца извлеченного ключа.</p></div>
+      <p class="caption" style="margin-top:16px">Нет загрузки файлов на сервер, аналитики и внешних библиотек. Для Ed25519 нужен браузер с поддержкой Web Crypto и HTTPS либо доверенный локальный контекст.</p>
+      <details><summary>Идентификатор ключа</summary><p class="key" id="key-id"></p></details>
+    </aside>
+  </div>
+  <section id="result" aria-live="polite" aria-atomic="false" hidden></section>
+  <footer><span>Developer: AbsurdEar7658</span><span>Windows · Minecraft Bedrock · Ed25519</span></footer>
+</main>
+<script>
+"use strict";
+const PUBLIC_KEY_B64 = "Em7uS7I44ZKbfwfSGkhs5HP1dmYn518iZAlEGLNJyhY=";
+const KEY_ID = "70c27636420539ce";
+const FORMAT = "bedrock-check.ed25519.v1";
+const DOMAIN = "BedrockCheck/report/v1\u0000";
+const MAX_BYTES = 16 * 1024 * 1024;
+class ReportError extends Error {}
+class SupportError extends Error {}
+
+// Reject duplicate JSON keys, excessive nesting and non-finite numbers instead
+// of silently interpreting ambiguous report data differently across languages.
+function parseUniqueJSON(text) {
+  let i = 0;
+  const fail = () => { throw new ReportError("Некорректный или неоднозначный JSON."); };
+  const space = () => { while (/[\x20\t\r\n]/.test(text[i] || "x")) i++; };
+  function string() {
+    const start = i++;
+    while (i < text.length) {
+      const c = text[i++];
+      if (c === '"') {
+        try { return JSON.parse(text.slice(start, i)); } catch { fail(); }
+      }
+      if (c === "\\") i++;
+    }
+    fail();
+  }
+  function value(depth) {
+    if (depth > 64) fail();
+    space();
+    const c = text[i];
+    if (c === '"') return string();
+    if (c === "{") {
+      i++; space();
+      const out = Object.create(null), keys = new Set();
+      if (text[i] === "}") { i++; return out; }
+      while (i < text.length) {
+        space(); if (text[i] !== '"') fail();
+        const key = string();
+        if (keys.has(key)) fail();
+        keys.add(key); space(); if (text[i++] !== ":") fail();
+        out[key] = value(depth + 1); space();
+        const next = text[i++];
+        if (next === "}") return out;
+        if (next !== ",") fail();
+      }
+      fail();
+    }
+    if (c === "[") {
+      i++; space(); const out = [];
+      if (text[i] === "]") { i++; return out; }
+      while (i < text.length) {
+        if (out.length >= 100000) fail();
+        out.push(value(depth + 1)); space();
+        const next = text[i++];
+        if (next === "]") return out;
+        if (next !== ",") fail();
+      }
+      fail();
+    }
+    for (const [literal, result] of [["true",true],["false",false],["null",null]]) {
+      if (text.startsWith(literal, i)) { i += literal.length; return result; }
+    }
+    const match = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(text.slice(i));
+    if (!match) fail();
+    i += match[0].length;
+    const number = Number(match[0]);
+    if (!Number.isFinite(number)) fail();
+    return number;
+  }
+  const result = value(0); space(); if (i !== text.length) fail();
+  return result;
+}
+
+function base64Bytes(text, size) {
+  if (typeof text !== "string" || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(text))
+    throw new ReportError("Некорректная кодировка подписи.");
+  let result;
+  try { result = Uint8Array.from(atob(text), c => c.charCodeAt(0)); }
+  catch { throw new ReportError("Некорректная подпись."); }
+  if (result.length !== size) throw new ReportError("Некорректная длина подписи.");
+  return result;
+}
+
+function validatePayload(payload) {
+  if (!payload || typeof payload !== "object" || payload.schema_version !== 1)
+    throw new ReportError("Неподдерживаемая структура отчета.");
+  for (const field of ["created_at","pc_name","developer","report_id","app_version","challenge"])
+    if (typeof payload[field] !== "string") throw new ReportError("Некорректное поле: " + field);
+  if (payload.developer !== "Developer: AbsurdEar7658") throw new ReportError("Неверный разработчик.");
+  const scan = payload.scan;
+  if (!scan || !["completed","partial","cancelled","failed"].includes(scan.status) ||
+      !Array.isArray(scan.findings) || scan.findings.length > 20000)
+    throw new ReportError("Некорректный результат сканирования.");
+  for (const item of scan.findings) {
+    if (!item || ["category","path","source","detail","confidence"].some(k => typeof item[k] !== "string") ||
+        !Array.isArray(item.keywords) || item.keywords.some(k => typeof k !== "string"))
+      throw new ReportError("Некорректная находка.");
+  }
+}
+
+async function verifyReport(raw) {
+  if (typeof raw !== "string" || raw.length > MAX_BYTES || new TextEncoder().encode(raw).length > MAX_BYTES)
+    throw new ReportError("Отчет превышает лимит 16 MiB.");
+  const envelope = parseUniqueJSON(raw.replace(/^\uFEFF/, ""));
+  if (!envelope || typeof envelope !== "object" || Array.isArray(envelope) ||
+      Object.keys(envelope).sort().join(",") !== "Signature,format,key_id,payload" ||
+      envelope.format !== FORMAT || envelope.key_id !== KEY_ID || typeof envelope.payload !== "string")
+    throw new ReportError("Неизвестный формат, ключ или структура отчета.");
+  const signature = base64Bytes(envelope.Signature, 64);
+  if (!globalThis.crypto?.subtle) throw new SupportError("Web Crypto недоступен. Откройте страницу по HTTPS в современном браузере.");
+  let publicKey;
+  try { publicKey = await crypto.subtle.importKey("raw", base64Bytes(PUBLIC_KEY_B64, 32), {name:"Ed25519"}, false, ["verify"]); }
+  catch (error) {
+    if (error.name === "NotSupportedError") throw new SupportError("Этот браузер не поддерживает Ed25519. Обновите браузер или откройте страницу в актуальном Chrome / Safari / Firefox.");
+    throw error;
+  }
+  const valid = await crypto.subtle.verify({name:"Ed25519"}, publicKey, signature,
+                                         new TextEncoder().encode(DOMAIN + envelope.payload));
+  if (!valid) throw new ReportError("Цифровая подпись не соответствует содержимому.");
+  const payload = parseUniqueJSON(envelope.payload);
+  validatePayload(payload);
+  return payload;
+}
+globalThis.BedrockVerifier = {verifyReport, parseUniqueJSON, KEY_ID, PUBLIC_KEY_B64};
+
+if (typeof document !== "undefined") {
+  const $ = id => document.getElementById(id);
+  const result = $("result"), button = $("verify");
+  let generation = 0;
+  function node(tag, text, className) {
+    const element = document.createElement(tag);
+    if (text !== undefined) element.textContent = String(text);
+    if (className) element.className = className;
+    return element;
+  }
+  function clearResult() { generation++; result.replaceChildren(); result.hidden = true; }
+  function verdict(kind, title, message) {
+    const card = node("div", undefined, "verdict " + kind);
+    card.append(node("h2", title), node("p", message)); result.append(card);
+  }
+  function metadata(parent, title, text) {
+    const cell = node("div"); cell.append(node("span", title), node("strong", text)); parent.append(cell);
+  }
+  function render(payload) {
+    verdict("good", "ОТЧЕТ ПОДЛИННЫЙ", "Подпись Ed25519 действительна. Подписанные данные соответствуют этому ключу проекта.");
+    const card = node("div", undefined, "card");
+    const scan = payload.scan, meta = node("div", undefined, "meta");
+    const date = new Date(payload.created_at);
+    const statusNames = {completed:"Обход завершен",partial:"НЕПОЛНАЯ ПРОВЕРКА",cancelled:"ПРОВЕРКА ПРЕРВАНА",failed:"ОШИБКА ПРОВЕРКИ"};
+    metadata(meta,"Имя ПК",payload.pc_name);
+    metadata(meta,"Дата и время",Number.isFinite(+date) ? date.toLocaleString("ru-RU") : payload.created_at);
+    metadata(meta,"Состояние",statusNames[scan.status]);
+    metadata(meta,"Индикаторы",scan.findings.length);
+    metadata(meta,"Код проверки",payload.challenge || "Не указан");
+    metadata(meta,"Версия программы",payload.app_version);
+    card.append(meta);
+    const expected = $("challenge").value.trim();
+    if (expected && expected !== payload.challenge)
+      card.append(node("p", "КОД НЕ СОВПАЛ. Этот отчет не относится к ожидаемому сеансу. Не принимайте его как результат текущей проверки.", "warning"));
+    if (scan.status !== "completed")
+      card.append(node("p", "Проверка не завершена полностью. Недоступные источники, остановка или ошибка не означают отсутствия находок.", "warning"));
+    if (!Number.isFinite(+date) || Date.now() - date > 86400000 || date - Date.now() > 300000)
+      card.append(node("p", "Сверьте время: отчет старше 24 часов, датирован будущим или содержит некорректную дату. Время берется с проверяемого ПК.", "warning"));
+    card.append(node("p", "Встроенный приватный ключ можно извлечь. Действительная подпись подтверждает целостность, но не честность проверки. Все индикаторы требуют ручной оценки.", "caption"));
+    card.append(node("h2", "Найденные индикаторы"));
+    const search = node("input"); search.type = "search"; search.placeholder = "Поиск по пути, категории или ключевому слову";
+    search.setAttribute("aria-label","Поиск по находкам"); search.className = "toolbar";
+    const list = node("div"), count = node("p", "", "caption"), more = node("button", "Показать еще 100", "secondary");
+    let filtered = scan.findings, shown = 0;
+    function appendPage() {
+      for (const finding of filtered.slice(shown, shown + 100)) {
+        const item = node("article", undefined, "finding");
+        item.append(node("h3", finding.category), node("div", finding.path, "path"), node("p", finding.detail));
+        if (finding.keywords.length) item.append(node("div", finding.keywords.join(" · "), "tag"));
+        item.append(node("div", "Источник: " + finding.source, "caption")); list.append(item);
+      }
+      shown = Math.min(shown + 100, filtered.length);
+      count.textContent = "Показано " + shown + " из " + filtered.length;
+      more.hidden = shown >= filtered.length;
+    }
+    search.addEventListener("input", () => {
+      const query = search.value.toLocaleLowerCase();
+      filtered = scan.findings.filter(f => [f.path,f.category,...f.keywords].join(" ").toLocaleLowerCase().includes(query));
+      shown = 0; list.replaceChildren(); appendPage();
+    });
+    more.addEventListener("click", appendPage);
+    if (scan.findings.length) { card.append(search, count, list, more); appendPage(); }
+    else card.append(node("p", "Индикаторы не найдены. Это не гарантирует отсутствие читов: сканер использует ограниченные эвристики.", "empty"));
+    const details = node("details"), summary = node("summary", "Охват и ограничения проверки"); details.append(summary);
+    const memoryNames = {checked:"DLL просмотрены",not_running:"Игра не запущена — DLL не проверены",partial:"DLL проверены частично",unavailable:"DLL недоступны",cancelled:"Проверка DLL прервана",disabled:"Проверка DLL отключена",not_checked:"DLL не проверены"};
+    details.append(node("p", memoryNames[scan.memory?.status] || "Состояние проверки DLL неизвестно"));
+    if (scan.stats && typeof scan.stats === "object") {
+      const fields = {files:"Файлов",directories:"Папок",archives:"ZIP",configs:"Конфигов",issues:"Ошибок/ограничений",findings_omitted:"Не сохранено находок",reparse_skipped:"Ссылок/reparse пропущено",offline_skipped:"Офлайн-файлов пропущено"};
+      for (const [key,label] of Object.entries(fields))
+        if (typeof scan.stats[key] === "number") details.append(node("div", label + ": " + scan.stats[key], "caption"));
+    }
+    details.append(node("p", "Не проверяются: содержимое RAR, вложенные архивы, цели символических ссылок/reparse points, вручную отображенные DLL и восстановление удаленных файлов. Oderso исключается по заданному правилу.", "caption"));
+    if (Array.isArray(scan.roots)) for (const path of scan.roots) details.append(node("div", path, "path"));
+    if (Array.isArray(scan.issues)) for (const issue of scan.issues.slice(0,200))
+      details.append(node("div", String(issue.path) + ": " + String(issue.message), "issue"));
+    details.append(node("p", "ID отчета: " + payload.report_id, "key"));
+    card.append(details); result.append(card);
+  }
+  async function check() {
+    clearResult(); const token = generation; button.disabled = true; button.textContent = "Проверяем…";
+    try {
+      const payload = await verifyReport($("report").value);
+      if (token !== generation) return;
+      render(payload);
+    } catch (error) {
+      if (token !== generation) return;
+      result.replaceChildren();
+      if (error instanceof SupportError) verdict("neutral", "ПРОВЕРКА НЕДОСТУПНА", error.message);
+      else verdict("bad", "ВНИМАНИЕ: ОТЧЕТ ПОДДЕЛАН ИЛИ ИЗМЕНЕН!", error.message || "Не удалось прочитать или проверить отчет.");
+    } finally {
+      button.disabled = false; button.textContent = "Проверить подпись";
+      if (token === generation) { result.hidden = false; result.scrollIntoView({behavior:"auto",block:"start"}); }
+    }
+  }
+  $("file").addEventListener("change", async () => {
+    clearResult(); const token = generation; const file = $("file").files[0]; if (!file) return;
+    if (file.size > MAX_BYTES) { verdict("bad", "ФАЙЛ СЛИШКОМ БОЛЬШОЙ", "Максимальный размер — 16 MiB."); result.hidden = false; return; }
+    try { const text = await file.text(); if (token !== generation) return; $("report").value = text; await check(); }
+    catch { if (token === generation) { verdict("bad", "НЕ УДАЛОСЬ ПРОЧИТАТЬ ФАЙЛ", "Выберите доступный JSON-файл отчета."); result.hidden = false; } }
+  });
+  $("report").addEventListener("input", clearResult);
+  $("challenge").addEventListener("input", clearResult);
+  $("verify").addEventListener("click", check);
+  $("reset").addEventListener("click", () => {clearResult(); $("report").value=""; $("file").value=""; $("challenge").value=""; $("report").focus();});
+  $("key-id").textContent = KEY_ID + " · " + PUBLIC_KEY_B64;
+}
+</script>
+</body>
+</html>
