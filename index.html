@@ -146,6 +146,20 @@ function validatePayload(payload) {
         !Array.isArray(item.keywords) || item.keywords.some(k => typeof k !== "string"))
       throw new ReportError("Некорректная находка.");
   }
+  const history = scan.recent_changes;
+  if (history !== undefined) {
+    if (!history || history.window_minutes !== 15 || !Array.isArray(history.events) ||
+        history.events.length > 5000 || !Array.isArray(history.volumes) || history.volumes.length > 26 ||
+        history.events.some(event => !event ||
+          ["action","kind","at","drive","path"].some(key => typeof event[key] !== "string") ||
+          typeof event.path_resolved !== "boolean" ||
+          (event.previous_path !== undefined &&
+            (typeof event.previous_path !== "string" || typeof event.previous_path_resolved !== "boolean"))) ||
+        history.volumes.some(volume => !volume || typeof volume.drive !== "string" ||
+          typeof volume.status !== "string" || !Array.isArray(volume.notes) ||
+          volume.notes.some(note => typeof note !== "string")))
+      throw new ReportError("Некорректная история файлов.");
+  }
 }
 
 async function verifyReport(raw) {
@@ -190,6 +204,45 @@ if (typeof document !== "undefined") {
   }
   function metadata(parent, title, text) {
     const cell = node("div"); cell.append(node("span", title), node("strong", text)); parent.append(cell);
+  }
+  function renderHistory(history) {
+    const section = node("details");
+    section.append(node("summary", "Изменения файлов и папок за 15 минут · " + history.events.length));
+    const statuses = {checked:"Журнал просмотрен",partial:"Просмотрен частично",unavailable:"Журнал недоступен",
+      cancelled:"Проверка прервана",not_checked:"Журнал не проверен"};
+    const actions = {modified:"Изменение",deleted:"Удаление",recycled:"В корзину",renamed:"Переименование",
+      moved:"Перемещение",moved_and_renamed:"Перемещение с переименованием",rename_or_move:"Переименование или перемещение"};
+    section.append(node("p", statuses[history.status] || "Состояние журнала неизвестно", "caption"));
+    for (const volume of history.volumes) {
+      section.append(node("div", volume.drive + " · " + (statuses[volume.status] || volume.status), "caption"));
+      for (const note of volume.notes) section.append(node("div", note, "issue"));
+    }
+    if (!history.events.length) {
+      section.append(node("p", "В отчете нет записей журнала за этот период.", "empty"));
+      return section;
+    }
+    const list = node("div"), more = node("button", "Показать еще 100", "secondary");
+    let shown = 0;
+    function appendPage() {
+      for (const event of history.events.slice(shown, shown + 100)) {
+        const item = node("article", undefined, "finding");
+        const kind = event.kind === "directory" ? "папка" : "файл";
+        const date = new Date(event.at);
+        const time = Number.isFinite(+date) ? date.toLocaleString("ru-RU") : event.at;
+        item.append(node("h3", (actions[event.action] || event.action) + " · " + kind));
+        item.append(node("div", time + " · " + event.drive, "caption"));
+        const path = event.path || "Путь неизвестен";
+        item.append(node("div", event.previous_path ? event.previous_path + " → " + path : path, "path"));
+        if (!event.path_resolved || event.previous_path_resolved === false)
+          item.append(node("div", "Полный путь недоступен", "caption"));
+        list.append(item);
+      }
+      shown += 100;
+      more.hidden = shown >= history.events.length;
+    }
+    more.addEventListener("click", appendPage);
+    section.append(list, more); appendPage();
+    return section;
   }
   function render(payload) {
     verdict("good", "ОТЧЕТ ПОДЛИННЫЙ", "Подпись Ed25519 действительна. Подписанные данные соответствуют этому ключу проекта.");
@@ -236,6 +289,7 @@ if (typeof document !== "undefined") {
     more.addEventListener("click", appendPage);
     if (scan.findings.length) { card.append(search, count, list, more); appendPage(); }
     else card.append(node("p", "Индикаторы не найдены. Это не гарантирует отсутствие читов: сканер использует ограниченные эвристики.", "empty"));
+    if (scan.recent_changes) card.append(renderHistory(scan.recent_changes));
     const details = node("details"), summary = node("summary", "Охват и ограничения проверки"); details.append(summary);
     const memoryNames = {checked:"DLL просмотрены",not_running:"Игра не запущена — DLL не проверены",partial:"DLL проверены частично",unavailable:"DLL недоступны",cancelled:"Проверка DLL прервана",disabled:"Проверка DLL отключена",not_checked:"DLL не проверены"};
     details.append(node("p", memoryNames[scan.memory?.status] || "Состояние проверки DLL неизвестно"));
