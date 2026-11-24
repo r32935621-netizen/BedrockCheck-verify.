@@ -20,36 +20,46 @@
   <header>
     <div class="brand"><svg viewBox="0 0 40 44" fill="none" aria-hidden="true"><path d="M20 2 36 8v13c0 10-16 20-16 20S4 31 4 21V8Z" stroke="currentColor" stroke-width="2.3"/><path d="m12 21 5 5 11-12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>BEDROCK CHECK</div>
     <h1>Проверьте подпись.<br>Изучите факты.</h1>
-    <p class="lead">Откройте отчет с компьютера на телефоне и проверьте, менялись ли подписанные данные. Весь анализ выполняется в вашем браузере.</p>
+    <p class="lead">Откройте отчет с компьютера или устройства и проверьте, менялись ли подписанные данные. Весь анализ выполняется в вашем браузере.</p>
   </header>
   <div class="layout">
     <section class="card" aria-labelledby="upload-title">
       <h2 id="upload-title">Проверка отчета</h2>
       <p class="caption">Загрузите report.json или вставьте его содержимое. Максимум 16 MiB.</p>
-      <label for="file">Файл с компьютера</label>
+      <label for="file">Файл с отчетом</label>
       <input id="file" type="file" accept=".json,.txt,application/json,text/plain">
       <label for="report">Текст отчета</label>
       <textarea id="report" placeholder='{"format":"bedrock-check.ed25519.v1", ...}' spellcheck="false" autocomplete="off"></textarea>
       <label for="challenge" style="margin-top:16px">Ожидаемый код проверки</label>
-      <input id="challenge" type="text" maxlength="128" placeholder="Если вы сообщили код владельцу ПК" autocomplete="off">
+      <input id="challenge" type="text" maxlength="128" placeholder="Если вы сообщили код проверяемому" autocomplete="off">
       <div class="buttons"><button id="verify" type="button">Проверить подпись</button><button id="reset" class="secondary" type="button">Очистить</button></div>
       <noscript><p class="warning">Для проверки необходимо включить JavaScript.</p></noscript>
     </section>
     <aside class="card aside">
       <h2>Что подтверждает проверка</h2>
       <p>Ed25519 проверяет, что данные соответствуют цифровой подписи этого проекта.</p>
-      <ol class="steps"><li>Сообщите владельцу ПК новый случайный код до запуска сканера.</li><li>Получите файл отчета и проверьте подпись, код, время и имя ПК.</li><li>Оцените находки и ограничения проверки вручную.</li></ol>
-      <div class="note"><strong>Граница доверия</strong><p>Приватный ключ встроен в программу и может быть извлечен. Даже действительная подпись не доказывает честность сканирования, личность ПК или отсутствие читов. Код помогает сверить сеанс, но не защищает от владельца извлеченного ключа.</p></div>
+      <ol class="steps"><li>Сообщите проверяемому новый случайный код до запуска сканера.</li><li>Получите файл отчета и проверьте подпись, код, время и имя устройства.</li><li>Оцените находки и ограничения проверки вручную.</li></ol>
+      <div class="note"><strong>Граница доверия</strong><p>Приватный ключ встроен в программу и может быть извлечен. Даже действительная подпись не доказывает честность сканирования, личность устройства или отсутствие читов. Код помогает сверить сеанс, но не защищает от владельца извлеченного ключа.</p></div>
       <p class="caption" style="margin-top:16px">Нет загрузки файлов на сервер, аналитики и внешних библиотек. Для Ed25519 нужен браузер с поддержкой Web Crypto и HTTPS либо доверенный локальный контекст.</p>
       <details><summary>Идентификатор ключа</summary><p class="key" id="key-id"></p></details>
     </aside>
   </div>
   <section id="result" aria-live="polite" aria-atomic="false" hidden></section>
-  <footer><span>Developer: AbsurdEar7658</span><span>Windows · Minecraft Bedrock · Ed25519</span></footer>
+  <footer><span>Developer: AbsurdEar7658</span><span>Windows · Android · Minecraft Bedrock · Ed25519</span></footer>
 </main>
 <script>
 "use strict";
-const PUBLIC_KEY_B64 = "Em7uS7I44ZKbfwfSGkhs5HP1dmYn518iZAlEGLNJyhY=";
+const TRUSTED_KEYS = {
+  "70c27636420539ce": {
+    label: "Windows",
+    publicKeyB64: "Em7uS7I44ZKbfwfSGkhs5HP1dmYn518iZAlEGLNJyhY="
+  },
+  "<ANDROID_KEY_ID>": {
+    label: "Android",
+    publicKeyB64: "<ANDROID_PUBLIC_KEY_B64>"
+  }
+};
+const PUBLIC_KEY_B64 = TRUSTED_KEYS["70c27636420539ce"].publicKeyB64;
 const KEY_ID = "70c27636420539ce";
 const FORMAT = "bedrock-check.ed25519.v1";
 const DOMAIN = "BedrockCheck/report/v1\u0000";
@@ -57,8 +67,6 @@ const MAX_BYTES = 16 * 1024 * 1024;
 class ReportError extends Error {}
 class SupportError extends Error {}
 
-// Reject duplicate JSON keys, excessive nesting and non-finite numbers instead
-// of silently interpreting ambiguous report data differently across languages.
 function parseUniqueJSON(text) {
   let i = 0;
   const fail = () => { throw new ReportError("Некорректный или неоднозначный JSON."); };
@@ -166,14 +174,18 @@ async function verifyReport(raw) {
   if (typeof raw !== "string" || raw.length > MAX_BYTES || new TextEncoder().encode(raw).length > MAX_BYTES)
     throw new ReportError("Отчет превышает лимит 16 MiB.");
   const envelope = parseUniqueJSON(raw.replace(/^\uFEFF/, ""));
+  const keyEntry = envelope && typeof envelope === "object" && !Array.isArray(envelope) &&
+    Object.prototype.hasOwnProperty.call(TRUSTED_KEYS, envelope.key_id)
+    ? TRUSTED_KEYS[envelope.key_id]
+    : null;
   if (!envelope || typeof envelope !== "object" || Array.isArray(envelope) ||
       Object.keys(envelope).sort().join(",") !== "Signature,format,key_id,payload" ||
-      envelope.format !== FORMAT || envelope.key_id !== KEY_ID || typeof envelope.payload !== "string")
+      envelope.format !== FORMAT || !keyEntry || typeof envelope.payload !== "string")
     throw new ReportError("Неизвестный формат, ключ или структура отчета.");
   const signature = base64Bytes(envelope.Signature, 64);
   if (!globalThis.crypto?.subtle) throw new SupportError("Web Crypto недоступен. Откройте страницу по HTTPS в современном браузере.");
   let publicKey;
-  try { publicKey = await crypto.subtle.importKey("raw", base64Bytes(PUBLIC_KEY_B64, 32), {name:"Ed25519"}, false, ["verify"]); }
+  try { publicKey = await crypto.subtle.importKey("raw", base64Bytes(keyEntry.publicKeyB64, 32), {name:"Ed25519"}, false, ["verify"]); }
   catch (error) {
     if (error.name === "NotSupportedError") throw new SupportError("Этот браузер не поддерживает Ed25519. Обновите браузер или откройте страницу в актуальном Chrome / Safari / Firefox.");
     throw error;
@@ -185,7 +197,7 @@ async function verifyReport(raw) {
   validatePayload(payload);
   return payload;
 }
-globalThis.BedrockVerifier = {verifyReport, parseUniqueJSON, KEY_ID, PUBLIC_KEY_B64};
+globalThis.BedrockVerifier = {verifyReport, parseUniqueJSON, TRUSTED_KEYS, KEY_ID, PUBLIC_KEY_B64};
 
 if (typeof document !== "undefined") {
   const $ = id => document.getElementById(id);
@@ -245,12 +257,12 @@ if (typeof document !== "undefined") {
     return section;
   }
   function render(payload) {
-    verdict("good", "ОТЧЕТ ПОДЛИННЫЙ", "Подпись Ed25519 действительна. Подписанные данные соответствуют этому ключу проекта.");
+    verdict("good", "ОТЧЕТ ПОДЛИННЫЙ", "Подпись Ed25519 действительна. Подписанные данные соответствуют доверенному ключу проекта.");
     const card = node("div", undefined, "card");
     const scan = payload.scan, meta = node("div", undefined, "meta");
     const date = new Date(payload.created_at);
     const statusNames = {completed:"Обход завершен",partial:"НЕПОЛНАЯ ПРОВЕРКА",cancelled:"ПРОВЕРКА ПРЕРВАНА",failed:"ОШИБКА ПРОВЕРКИ"};
-    metadata(meta,"Имя ПК",payload.pc_name);
+    metadata(meta,"Имя устройства",payload.pc_name);
     metadata(meta,"Дата и время",Number.isFinite(+date) ? date.toLocaleString("ru-RU") : payload.created_at);
     metadata(meta,"Состояние",statusNames[scan.status]);
     metadata(meta,"Индикаторы",scan.findings.length);
@@ -263,7 +275,7 @@ if (typeof document !== "undefined") {
     if (scan.status !== "completed")
       card.append(node("p", "Проверка не завершена полностью. Недоступные источники, остановка или ошибка не означают отсутствия находок.", "warning"));
     if (!Number.isFinite(+date) || Date.now() - date > 86400000 || date - Date.now() > 300000)
-      card.append(node("p", "Сверьте время: отчет старше 24 часов, датирован будущим или содержит некорректную дату. Время берется с проверяемого ПК.", "warning"));
+      card.append(node("p", "Сверьте время: отчет старше 24 часов, датирован будущим или содержит некорректную дату. Время берется с проверяемого устройства.", "warning"));
     card.append(node("p", "Встроенный приватный ключ можно извлечь. Действительная подпись подтверждает целостность, но не честность проверки. Все индикаторы требуют ручной оценки.", "caption"));
     card.append(node("h2", "Найденные индикаторы"));
     const search = node("input"); search.type = "search"; search.placeholder = "Поиск по пути, категории или ключевому слову";
@@ -331,7 +343,9 @@ if (typeof document !== "undefined") {
   $("challenge").addEventListener("input", clearResult);
   $("verify").addEventListener("click", check);
   $("reset").addEventListener("click", () => {clearResult(); $("report").value=""; $("file").value=""; $("challenge").value=""; $("report").focus();});
-  $("key-id").textContent = KEY_ID + " · " + PUBLIC_KEY_B64;
+  $("key-id").textContent = Object.entries(TRUSTED_KEYS)
+    .map(([id, item]) => `${item.label}: ${id} · ${item.publicKeyB64}`)
+    .join(" | ");
 }
 </script>
 </body>
